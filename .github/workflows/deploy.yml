@@ -1,0 +1,31 @@
+
+name: Deploy to Surge
+
+on:
+  push:
+    branches:
+      - main  # Adjust this if your default branch has a different name
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '21.6.1'  # Matches your Node.js version
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build
+      run: npm run build
+
+    - name: Install Surge
+      run: npm install -g surge
+
+    - name: Deploy to Surge
+      run: surge ./dist surge-react-for-render.surge.sh --token ${{ secrets.SURGE_TOKEN }}
