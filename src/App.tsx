@@ -20,7 +20,7 @@ function App() {
   }
 
   // State variables
-  const [apiData, setApiData] = useState<ApiResponse | null>(null)
+  const [  , setApiData] = useState<ApiResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [products, setProducts] = useState<Product[]>([])
