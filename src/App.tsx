@@ -83,7 +83,7 @@ function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name: newProductName }),
+        body: JSON.stringify({ product: { name: newProductName } }),
       });
       
       if (!response.ok) {
@@ -116,8 +116,7 @@ function App() {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
       
-      const data = await response.json();
-      setApiData(data);
+      // No need to parse response as the server returns no content
       setCurrentView('list');
       fetchProducts(); // Refresh the product list
       setError(null);
