@@ -10,6 +10,9 @@ function App() {
   interface Product {
     id: number;
     name: string;
+    description?: string;
+    price: number;
+    category?: string;
     created_at: string;
     updated_at: string;
   }
@@ -26,6 +29,9 @@ function App() {
   const [products, setProducts] = useState<Product[]>([])
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [newProductName, setNewProductName] = useState('')
+  const [newProductPrice, setNewProductPrice] = useState('')
+  const [newProductDescription, setNewProductDescription] = useState('')
+  const [newProductCategory, setNewProductCategory] = useState('')
   const [currentView, setCurrentView] = useState<'list' | 'detail' | 'create'>('list')
   
   const API_BASE_URL = 'https://render-rails-2yoa.onrender.com';
@@ -83,7 +89,14 @@ function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ product: { name: newProductName } }),
+        body: JSON.stringify({ 
+          product: { 
+            name: newProductName,
+            price: parseFloat(newProductPrice) || 0,
+            description: newProductDescription,
+            category: newProductCategory
+          } 
+        }),
       });
       
       if (!response.ok) {
@@ -93,6 +106,9 @@ function App() {
       const data = await response.json();
       setApiData(data);
       setNewProductName('');
+      setNewProductPrice('');
+      setNewProductDescription('');
+      setNewProductCategory('');
       setCurrentView('list');
       fetchProducts(); // Refresh the product list
       setError(null);
@@ -171,6 +187,13 @@ function App() {
             <h2>Product Details</h2>
             <p><strong>ID:</strong> {selectedProduct.id}</p>
             <p><strong>Name:</strong> {selectedProduct.name}</p>
+            {selectedProduct.description && (
+              <p><strong>Description:</strong> {selectedProduct.description}</p>
+            )}
+            <p><strong>Price:</strong> ${selectedProduct.price.toFixed(2)}</p>
+            {selectedProduct.category && (
+              <p><strong>Category:</strong> {selectedProduct.category}</p>
+            )}
             <p><strong>Created:</strong> {new Date(selectedProduct.created_at).toLocaleString()}</p>
             <p><strong>Updated:</strong> {new Date(selectedProduct.updated_at).toLocaleString()}</p>
             <button onClick={() => setCurrentView('list')}>Back to List</button>
@@ -193,6 +216,35 @@ function App() {
                   value={newProductName}
                   onChange={(e) => setNewProductName(e.target.value)}
                   required
+                />
+              </div>
+              <div>
+                <label htmlFor="productPrice">Price:</label>
+                <input 
+                  type="number" 
+                  id="productPrice"
+                  value={newProductPrice}
+                  onChange={(e) => setNewProductPrice(e.target.value)}
+                  step="0.01"
+                  min="0"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="productDescription">Description:</label>
+                <textarea 
+                  id="productDescription"
+                  value={newProductDescription}
+                  onChange={(e) => setNewProductDescription(e.target.value)}
+                />
+              </div>
+              <div>
+                <label htmlFor="productCategory">Category:</label>
+                <input 
+                  type="text" 
+                  id="productCategory"
+                  value={newProductCategory}
+                  onChange={(e) => setNewProductCategory(e.target.value)}
                 />
               </div>
               <button type="submit">Create Product</button>
