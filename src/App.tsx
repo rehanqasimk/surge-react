@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom'
 import './App.css'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
+import Login from './components/auth/Login'
+import Register from './components/auth/Register'
+import Profile from './components/auth/Profile'
+import ProtectedRoute from './components/auth/ProtectedRoute'
 
-function App() {
+function AppContent() {
   // const [count, setCount] = useState(0)
   
   // Define Product interface
@@ -37,6 +41,9 @@ function App() {
   // Configure API URL - Set this to false for production
   const useLocalServer = true;
   const API_BASE_URL = useLocalServer ? 'http://localhost:3000' : 'https://render-rails-2yoa.onrender.com';
+
+  // Get authentication context
+  const { isAuthenticated, user, logout } = useAuth();
 
   // Fetch all products
   const fetchProducts = async () => {
@@ -294,27 +301,59 @@ function App() {
   };
 
   return (
-    <div className="app-container">
-      <header className="app-header">
-        <div className="logo-container">
-          <a href="https://vite.dev" target="_blank">
-            <img src={viteLogo} className="logo" alt="Vite logo" />
-          </a>
-          <a href="https://react.dev" target="_blank">
-            <img src={reactLogo} className="logo react" alt="React logo" />
-          </a>
+    <div className="container">
+      <header>
+        <div className="logo">
+          <h1>Store App</h1>
         </div>
-        <h1>Product Management System</h1>
+        <nav>
+          <ul>
+            <li><Link to="/">Home</Link></li>
+            {isAuthenticated ? (
+              <>
+                <li><Link to="/profile">Profile</Link></li>
+                <li><button onClick={logout} className="nav-button">Logout</button></li>
+                <li className="user-info">Welcome, {user?.name}</li>
+              </>
+            ) : (
+              <>
+                <li><Link to="/login">Login</Link></li>
+                <li><Link to="/register">Register</Link></li>
+              </>
+            )}
+          </ul>
+        </nav>
       </header>
-      
-      <main className="content-container">
-        {renderContent()}
+
+      <main>
+        <Routes>
+          <Route path="/" element={
+            isAuthenticated 
+              ? <div className="products-container">{renderContent()}</div> 
+              : <Navigate to="/login" />
+          } />
+          <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/" />} />
+          <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/" />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/profile" element={<Profile />} />
+          </Route>
+        </Routes>
       </main>
-      
-      <footer className="app-footer">
-        <p>Product Management System - Built with React and Vite</p>
+
+      <footer>
+        <p>&copy; {new Date().getFullYear()} Store App. All rights reserved.</p>
       </footer>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
