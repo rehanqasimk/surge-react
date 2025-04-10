@@ -4,7 +4,7 @@ import viteLogo from '/vite.svg'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  // const [count, setCount] = useState(0)
   
   // Define Product interface
   interface Product {
@@ -34,7 +34,9 @@ function App() {
   const [newProductCategory, setNewProductCategory] = useState('')
   const [currentView, setCurrentView] = useState<'list' | 'detail' | 'create'>('list')
   
-  const API_BASE_URL = 'https://render-rails-2yoa.onrender.com';
+  // Configure API URL - Set this to false for production
+  const useLocalServer = true;
+  const API_BASE_URL = useLocalServer ? 'http://localhost:3000' : 'https://render-rails-2yoa.onrender.com';
 
   // Fetch all products
   const fetchProducts = async () => {
@@ -147,12 +149,14 @@ function App() {
   useEffect(() => {
     // Initial data fetch
     fetchProducts();
+ 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Render UI based on current view
   const renderContent = () => {
     if (loading) {
-      return <p>Loading data...</p>;
+      return <div className="loading">Loading data...</div>;
     }
     
     if (error) {
@@ -170,14 +174,19 @@ function App() {
               <ul>
                 {products.map(product => (
                   <li key={product.id}>
-                    {product.name}
-                    <button onClick={() => getProductById(product.id)}>View</button>
-                    <button onClick={() => deleteProduct(product.id)}>Delete</button>
+                    <span className="product-name">{product.name}</span>
+                    <span className="product-price">${Number(product.price).toFixed(2)}</span>
+                    <div className="action-buttons">
+                      <button className="primary" onClick={() => getProductById(product.id)}>View</button>
+                      <button className="danger" onClick={() => deleteProduct(product.id)}>Delete</button>
+                    </div>
                   </li>
                 ))}
               </ul>
             )}
-            <button onClick={() => setCurrentView('create')}>Add New Product</button>
+            <div className="form-buttons">
+              <button className="success" onClick={() => setCurrentView('create')}>Add New Product</button>
+            </div>
           </div>
         );
       
@@ -185,19 +194,46 @@ function App() {
         return selectedProduct ? (
           <div className="product-detail">
             <h2>Product Details</h2>
-            <p><strong>ID:</strong> {selectedProduct.id}</p>
-            <p><strong>Name:</strong> {selectedProduct.name}</p>
+            <div className="detail-row">
+              <span className="detail-label">ID:</span>
+              <span className="detail-value">{selectedProduct.id}</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">Name:</span>
+              <span className="detail-value">{selectedProduct.name}</span>
+            </div>
             {selectedProduct.description && (
-              <p><strong>Description:</strong> {selectedProduct.description}</p>
+              <div>
+                <div className="detail-row">
+                  <span className="detail-label">Description:</span>
+                </div>
+                <div className="detail-description">
+                  {selectedProduct.description}
+                </div>
+              </div>
             )}
-            <p><strong>Price:</strong> ${selectedProduct.price.toFixed(2)}</p>
+            <div className="detail-row">
+              <span className="detail-label">Price:</span>
+              <span className="detail-value">${Number(selectedProduct.price).toFixed(2)}</span>
+            </div>
             {selectedProduct.category && (
-              <p><strong>Category:</strong> {selectedProduct.category}</p>
+              <div className="detail-row">
+                <span className="detail-label">Category:</span>
+                <span className="detail-value">{selectedProduct.category}</span>
+              </div>
             )}
-            <p><strong>Created:</strong> {new Date(selectedProduct.created_at).toLocaleString()}</p>
-            <p><strong>Updated:</strong> {new Date(selectedProduct.updated_at).toLocaleString()}</p>
-            <button onClick={() => setCurrentView('list')}>Back to List</button>
-            <button onClick={() => deleteProduct(selectedProduct.id)}>Delete</button>
+            <div className="detail-row">
+              <span className="detail-label">Created:</span>
+              <span className="detail-value">{new Date(selectedProduct.created_at).toLocaleString()}</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">Updated:</span>
+              <span className="detail-value">{new Date(selectedProduct.updated_at).toLocaleString()}</span>
+            </div>
+            <div className="form-buttons">
+              <button className="secondary" onClick={() => setCurrentView('list')}>Back to List</button>
+              <button className="danger" onClick={() => deleteProduct(selectedProduct.id)}>Delete</button>
+            </div>
           </div>
         ) : (
           <p>Product not found</p>
@@ -208,7 +244,7 @@ function App() {
           <div className="create-product">
             <h2>Create New Product</h2>
             <form onSubmit={createProduct}>
-              <div>
+              <div className="form-group">
                 <label htmlFor="productName">Product Name:</label>
                 <input 
                   type="text" 
@@ -218,7 +254,7 @@ function App() {
                   required
                 />
               </div>
-              <div>
+              <div className="form-group">
                 <label htmlFor="productPrice">Price:</label>
                 <input 
                   type="number" 
@@ -230,7 +266,7 @@ function App() {
                   required
                 />
               </div>
-              <div>
+              <div className="form-group">
                 <label htmlFor="productDescription">Description:</label>
                 <textarea 
                   id="productDescription"
@@ -238,7 +274,7 @@ function App() {
                   onChange={(e) => setNewProductDescription(e.target.value)}
                 />
               </div>
-              <div>
+              <div className="form-group">
                 <label htmlFor="productCategory">Category:</label>
                 <input 
                   type="text" 
@@ -247,8 +283,10 @@ function App() {
                   onChange={(e) => setNewProductCategory(e.target.value)}
                 />
               </div>
-              <button type="submit">Create Product</button>
-              <button type="button" onClick={() => setCurrentView('list')}>Cancel</button>
+              <div className="form-buttons">
+                <button type="submit" className="success">Create Product</button>
+                <button type="button" className="secondary" onClick={() => setCurrentView('list')}>Cancel</button>
+              </div>
             </form>
           </div>
         );
@@ -256,31 +294,28 @@ function App() {
   };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Product Management System</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        
-        {/* Product Management UI */}
-        <div className="product-management">
-          {renderContent()}
+    <div className="app-container">
+      <header className="app-header">
+        <div className="logo-container">
+          <a href="https://vite.dev" target="_blank">
+            <img src={viteLogo} className="logo" alt="Vite logo" />
+          </a>
+          <a href="https://react.dev" target="_blank">
+            <img src={reactLogo} className="logo react" alt="React logo" />
+          </a>
         </div>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+        <h1>Product Management System</h1>
+      </header>
+      
+      <main className="content-container">
+        {renderContent()}
+      </main>
+      
+      <footer className="app-footer">
+        <p>Product Management System - Built with React and Vite</p>
+      </footer>
+    </div>
+  );
 }
 
 export default App
